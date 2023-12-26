@@ -22,7 +22,7 @@ class DemoRest(val s3: S3Client, val env: Environment) {
             bucket = targetBucket
         }
         s3.listObjects(req)
-                .contents?.forEach { emit(it) }
+            .contents?.forEach { emit(it) }
 
     }.map {
         "The name of the key is ${it.key}\n<BR>"
@@ -31,13 +31,14 @@ class DemoRest(val s3: S3Client, val env: Environment) {
     @GetMapping("/fetch")
     suspend fun fetch(): String {
         val keyName = "Iris.parquet"
-        val request = GetObjectRequest {
+        val tempFile = kotlin.io.path.createTempFile("Iris", ".parquet")
+        GetObjectRequest {
             key = keyName
             bucket = targetBucket
-        }
-        val tempFile = kotlin.io.path.createTempFile("Iris", ".parquet")
-        s3.getObject(request) { resp ->
-            resp.body?.writeToFile(tempFile)
+        }.let { req ->
+            s3.getObject(req) { resp ->
+                resp.body?.writeToFile(tempFile)
+            }
         }
 
         return "Successfully read $keyName to $tempFile "
