@@ -11,23 +11,17 @@ abstract class TestContainersSetup {
 
     companion object {
         @Container
-        val minio = MinIOContainer("minio/minio:latest")
+        private val minio: MinIOContainer =
+            MinIOContainer("minio/minio:RELEASE.2023-12-23T07-19-11Z")
             .withUserName("testuser")
             .withPassword("testpassword")
 
         @DynamicPropertySource
         @JvmStatic
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
-            registry.add("minio.url") { minio.s3URL.also { println(it) } }
+            registry.add("minio.url") { minio.s3URL.also { println("testcontainers minio $it") } }
             registry.add("minio.accessKeyId", minio::getUserName)
             registry.add("minio.secretAccessKey", minio::getPassword)
-        }
-
-
-        @JvmStatic
-        @BeforeAll
-        fun start(): Unit {
-            minio.start()
         }
 
     }
